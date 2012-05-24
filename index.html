@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script src="./js/online.js"></script>
+        <title>OnlineJS demo page</title>
+    </head>
+    <body>
+        <h1 id="online_title">Checking online presence</h1>
+        <p>
+        	Switch internet connection on / off or plug in / out network cord to test OnlineJS
+        </p>
+        <script>
+        	window.onlineCheckURL = 'http://pixelsresearch.com/online.php';
+        	window.onlineHandler = function(){
+        		document.getElementById('online_title').innerHTML = 'You are online';
+        	};
+        	window.offlineHandler = function(){
+        		document.getElementById('online_title').innerHTML = 'You are offline';
+        	};
+        </script>
+    </body>
+</html>
