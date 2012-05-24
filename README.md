@@ -6,9 +6,9 @@ Lightweight and easy to use library to check internet connection status.
 Usage
 -----
 
-Include this library into your project and just check is <b>window.online</b> true.
+Include this library into your project and just check is <code>window.online</code> true.
 
-Assign <b>window.onlineHandler</b> or <b>window.offlineHandler</b> functions to handle status changes.
+Assign <code>window.onlineHandler</code> or <code>window.offlineHandler</code> functions to handle status changes.
 
 Also you can change window.onlineCheckURL to your own one to be independent.
 
