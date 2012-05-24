@@ -12,7 +12,7 @@ Assign <code>window.onlineHandler</code> or <code>window.offlineHandler</code> f
 
 Also you can change <code>window.onlineCheckURL</code> to your own one to be independent.
 
-Just look at index.html example in repo!
+Just look at <a href="http://pixelscommander.com/polygon/onlinejs/">example</a> in repo!
 
 
 Questions and propositions
