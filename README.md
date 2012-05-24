@@ -10,9 +10,9 @@ Include this library into your project and just check is <b>window.online</b> tr
 
 Assign <b>window.onlineHandler</b> or <b>window.offlineHandler</b> functions to handle status changes.
 
-Also you can change window.onlineCheckURL to your own to be independent.
+Also you can change window.onlineCheckURL to your own one to be independent.
 
-For all this stuff just look at index.html example in repo.
+Just look at index.html example in repo!
 
 
 Questions and propositions
