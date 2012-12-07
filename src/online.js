@@ -55,7 +55,7 @@
 	    	w.internetConnection.checkonLine(false);
 	    }
 	    
-		w.onLineCheckURL = "http://www.pixelsresearch.com/onLine.php?r=" + Math.random();
+		w.onLineCheckURL = "http://www.pixelsresearch.com/online.php?r=" + Math.random();
 	    w.onLineCheckTimeout = 5000;
 	    w.internetConnection.startCheck();
 	} 
