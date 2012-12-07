@@ -29,11 +29,16 @@
 		  	}
 	    }
 	    
-	     w.internetConnection.checkonLine = function (){
+	     w.internetConnection.checkonLine = function (sync){
 	    	if (xmlhttp!=null){
 		        xmlhttp.onreadystatechange=this.onInternetStatus;
-		        xmlhttp.open("HEAD",w.onLineCheckURL,true);
+		        xmlhttp.open("HEAD",w.onLineCheckURL, sync || true);
 		        xmlhttp.send();
+
+		        if (sync === false){
+		        	w.onLine = ( xmlhttp.status >= 200 && xmlhttp.status < 300 || xmlhttp.status === 304 );
+		        	return w.onLine;
+		        }
 		    }
 	    }
 	    
@@ -45,7 +50,10 @@
 	    w.internetConnection.stopCheck = function (){
 	    	clearInterval("window.internetConnection.checkonLine()",w.onLineCheckTimeout);	
 	    }
-	    return this;	
+
+	    w.checkOnLine = function(){
+	    	w.internetConnection.checkonLine(false);
+	    }
 	    
 		w.onLineCheckURL = "http://www.pixelsresearch.com/onLine.php?r=" + Math.random();
 	    w.onLineCheckTimeout = 5000;
