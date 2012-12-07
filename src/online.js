@@ -1,60 +1,54 @@
 (
 	function (w){
-		
-	     var OnLine = function(w){
 	     	
-	    	if (w.XMLHttpRequest){
-		        var xmlhttp=new XMLHttpRequest()
-		    } else if (w.ActiveXObject){
-		        var xmlhttp=new ActiveXObject("Microsoft.XMLHTTP")
-		    }
-		    
-		    this.onInternetStatus = function (){
-		    	if (xmlhttp.readyState==4){
-			        try {
-			            if (xmlhttp.status==200){
-				            if (w.onlineHandler !== undefined && w.online !== true){
-				            	w.onlineHandler();	
-				            }
-				            w.online = true;
-				            return;
-				        } else {
-				          	if (w.offlineHandler !== undefined && w.online !== false){
-				            	w.offlineHandler();	
-				            }
-				            w.online = false;
-				        }
-				    } catch(err){
-				    	if (w.offlineHandler !== undefined && w.online !== false){
-			            	w.offlineHandler();	
+	    w.internetConnection = w.internetConnection || {};
+
+	    var xmlhttp = new ( window.ActiveXObject || XMLHttpRequest )( "Microsoft.XMLHTTP" );
+
+	    w.internetConnection.onInternetStatus = function (){
+	    	if (xmlhttp.readyState==4){
+		        try {
+		            if (xmlhttp.status==200){
+			            if (w.onLineHandler !== undefined && w.onLine !== true){
+			            	w.onLineHandler();	
 			            }
-			            w.online = false;
-				    }
-			  	}
-		    }
-		    
-		     this.checkOnLine = function (){
-		    	if (xmlhttp!=null){
-			        xmlhttp.onreadystatechange=this.onInternetStatus;
-			        xmlhttp.open("GET",w.onlineCheckURL,true);
-			        xmlhttp.send(null);
+			            w.onLine = true;
+			            return;
+			        } else {
+			          	if (w.offLineHandler !== undefined && w.onLine !== false){
+			            	w.offLineHandler();	
+			            }
+			            w.onLine = false;
+			        }
+			    } catch(err){
+			    	if (w.offLineHandler !== undefined && w.onLine !== false){
+		            	w.offLineHandler();	
+		            }
+		            w.onLine = false;
 			    }
-		    }
-		    
-		    this.startCheck = function (){
-		    	window.internetConnection.checkOnLine();
-		    	setInterval("window.internetConnection.checkOnLine()",w.onlineCheckTimeout);	
-		    }
-		    
-		    this.stopCheck = function (){
-		    	clearInterval("window.internetConnection.checkOnLine()",w.onlineCheckTimeout);	
-		    }
-		    return this;	
+		  	}
 	    }
 	    
-		w.onlineCheckURL = "http://www.pixelsresearch.com/online.php";
-	    w.onlineCheckTimeout = 5000;
-	    w.internetConnection = new OnLine(window);
+	     w.internetConnection.checkonLine = function (){
+	    	if (xmlhttp!=null){
+		        xmlhttp.onreadystatechange=this.onInternetStatus;
+		        xmlhttp.open("HEAD",w.onLineCheckURL,true);
+		        xmlhttp.send();
+		    }
+	    }
+	    
+	    w.internetConnection.startCheck = function (){
+	    	w.internetConnection.checkonLine();
+	    	setInterval("window.internetConnection.checkonLine()",w.onLineCheckTimeout);	
+	    }
+	    
+	    w.internetConnection.stopCheck = function (){
+	    	clearInterval("window.internetConnection.checkonLine()",w.onLineCheckTimeout);	
+	    }
+	    return this;	
+	    
+		w.onLineCheckURL = "http://www.pixelsresearch.com/onLine.php?r=" + Math.random();
+	    w.onLineCheckTimeout = 5000;
 	    w.internetConnection.startCheck();
 	} 
 )(window);
