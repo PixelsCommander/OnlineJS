@@ -1,7 +1,7 @@
 ONLINE JS
 ========
 
-Lightweight and easy to use library to check internet connection status.
+Lightweight and reliable library to check internet connection status.
 
 Usage
 -----
