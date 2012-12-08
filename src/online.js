@@ -1,62 +1,101 @@
-(
-	function (w){
-	     	
-	    w.internetConnection = w.internetConnection || {};
+(function (w){
+    w.internetConnection = w.internetConnection || {};
 
-	    var xmlhttp = new ( window.ActiveXObject || XMLHttpRequest )( "Microsoft.XMLHTTP" );
+    w.internetConnection.addEvent = function(obj, type, callback){
+        if (window.attachEvent){
+            obj.attachEvent('on' + type, callback);
+        } else {
+            obj.addEventListener(type, callback);
+        }   
+    }
 
-	    w.internetConnection.onInternetStatus = function (){
-	    	if (xmlhttp.readyState==4){
-		        try {
-		            if (xmlhttp.status==200){
-			            if (w.onLineHandler !== undefined && w.onLine !== true){
-			            	w.onLineHandler();	
-			            }
-			            w.onLine = true;
-			            return;
-			        } else {
-			          	if (w.offLineHandler !== undefined && w.onLine !== false){
-			            	w.offLineHandler();	
-			            }
-			            w.onLine = false;
-			        }
-			    } catch(err){
-			    	if (w.offLineHandler !== undefined && w.onLine !== false){
-		            	w.offLineHandler();	
-		            }
-		            w.onLine = false;
-			    }
-		  	}
-	    }
-	    
-	     w.internetConnection.checkonLine = function (sync){
-	    	if (xmlhttp!=null){
-		        xmlhttp.onreadystatechange=this.onInternetStatus;
-		        xmlhttp.open("HEAD",w.onLineCheckURL, sync || true);
-		        xmlhttp.send();
+    var xmlhttp = new ( window.ActiveXObject || XMLHttpRequest )( "Microsoft.XMLHTTP" );
 
-		        if (sync === false){
-		        	w.onLine = ( xmlhttp.status >= 200 && xmlhttp.status < 300 || xmlhttp.status === 304 );
-		        	return w.onLine;
-		        }
-		    }
-	    }
-	    
-	    w.internetConnection.startCheck = function (){
-	    	w.internetConnection.checkonLine();
-	    	setInterval("window.internetConnection.checkonLine()",w.onLineCheckTimeout);	
-	    }
-	    
-	    w.internetConnection.stopCheck = function (){
-	    	clearInterval("window.internetConnection.checkonLine()",w.onLineCheckTimeout);	
-	    }
+    w.internetConnection.onInternetAsyncStatus = function (){
+        if (xmlhttp.readyState==4){
+            try {
+                w.internetConnection.processXmlhttpStatus();
+            } catch(err){
+                w.internetConnection.fireHandlerDependOnStatus(false);
+                w.onLine = false;
+            }
+        }
+    }
+    
+     w.internetConnection.checkConnectionWithRequest = function (sync){
+        if (xmlhttp!=null){
+            xmlhttp = new ( window.ActiveXObject || XMLHttpRequest )( "Microsoft.XMLHTTP" );
+            if (sync === undefined) {
+                xmlhttp.onreadystatechange = this.onInternetAsyncStatus;
+            } else {
+                xmlhttp.onreadystatechange = undefined;
+            }
 
-	    w.checkOnLine = function(){
-	    	w.internetConnection.checkonLine(false);
-	    }
-	    
-		w.onLineCheckURL = "http://www.pixelsresearch.com/online.php?r=" + Math.random();
-	    w.onLineCheckTimeout = 5000;
-	    w.internetConnection.startCheck();
-	} 
-)(window);
+            if (sync === undefined) {
+                sync = true;
+            }
+
+            var url = w.onLineCheckURL();
+
+            xmlhttp.open("HEAD", url, sync);
+            xmlhttp.send();
+
+            if (sync === false){
+                w.internetConnection.processXmlhttpStatus();
+                return w.onLine;
+            }
+        }
+    }
+
+    w.internetConnection.processXmlhttpStatus = function(){
+        var tempOnLine = w.internetConnection.verifyStatus(xmlhttp.status);
+        w.internetConnection.fireHandlerDependOnStatus(tempOnLine);
+        w.onLine = tempOnLine;  
+    }
+
+    w.internetConnection.verifyStatus = function(status){
+        return ( status >= 200 && status < 300 || status === 304 )  
+    }
+
+    w.internetConnection.fireHandlerDependOnStatus = function (newStatus){
+        if (newStatus === true && w.onLineHandler !== undefined && (w.onLine !== true || w.internetConnection.handlerFired === false)){
+            w.onLineHandler();  
+        }
+        if (newStatus === false && w.offLineHandler !== undefined && (w.onLine !== false || w.internetConnection.handlerFired === false)){
+            w.offLineHandler(); 
+        }
+        w.internetConnection.handlerFired = true;
+    }
+    
+    w.internetConnection.startCheck = function (){
+        setInterval("window.internetConnection.checkConnectionWithRequest()",w.onLineCheckTimeout);    
+    }
+    
+    w.internetConnection.stopCheck = function (){
+        clearInterval("window.internetConnection.checkConnectionWithRequest()",w.onLineCheckTimeout);  
+    }
+
+    w.checkOnLine = function(){
+        w.internetConnection.checkConnectionWithRequest(false);
+    }
+    
+    w.onLineCheckURL = function(){
+        return "http://www.pixelsresearch.com/online.php?r=" + Math.random();
+    }
+
+    w.onLineCheckTimeout = 5000;
+    w.checkOnLine();
+    w.internetConnection.startCheck();
+    w.internetConnection.handlerFired = false;
+
+    w.internetConnection.addEvent(w, 'load', function(){
+        w.internetConnection.fireHandlerDependOnStatus(w.onLine);   
+    });
+
+    w.internetConnection.addEvent(w, 'online', function(){
+        window.internetConnection.checkConnectionWithRequest();
+    });
+    w.internetConnection.addEvent(w, 'offline', function(){
+        window.internetConnection.checkConnectionWithRequest();
+    });
+})(window);
