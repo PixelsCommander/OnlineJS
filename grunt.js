@@ -16,7 +16,7 @@ module.exports = function(grunt) {
         src: [
           './src/online.js'
          ],
-        dest: '../min/online.min.js'
+        dest: './min/online.min.js'
       }
     }
   });

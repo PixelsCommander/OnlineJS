@@ -2,20 +2,53 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <script src="./src/online.js"></script>
+        <script src="./min/online.min.js"></script>
         <title>OnlineJS demo page</title>
     </head>
-    <body>
-        <h1 id="online_title">Checking online presence</h1>
-        <p>
-            Switch internet connection on / off or plug in / out network cord to test OnlineJS
-        </p>
+    <body style="font-family: Arial">
+        <div style="float:left; position: relative;">
+            <img id="red_light" src="./img/traffic_red.png" style="opacity:0;">
+            <img id="green_light" src="./img/traffic_green.png" style="position: absolute; left: 0px; top: 0px;">
+        </div>
+        <div style="float:left; margin-left: 40px;">
+            <h1 id="online_title">Checking online presence</h1>
+            <p>
+                Switch internet connection on / off or plug in / out network cord to test Online JS
+            </p>
+            <p>
+                Online JS developed to provide safe and reliable way to check internet connection status and  work as fast as possible.
+            </p>
+            <p>
+                Optimisations implemented:
+            </p>
+            <ul>
+                <li>Checks status in background mode</li>
+                <li>Requests only headers to minimize traffic</li>
+                <li>Listens for window.online/offline events and verifies them</li>
+            </ul>
+            <h2>
+                Instructions
+            </h2>
+            <p>
+                Include this library into your project and just check is <b>window.onLine === true</b>
+            </p>
+            <p>
+                Define <b>window.onLineHandler</b> or <b>window.offLineHandler</b> functions to handle status changes.
+            </p>
+        </div>
         <script>
+            var greenLight = document.getElementById('green_light');
+            var redLight = document.getElementById('red_light');
+
             window.onLineHandler = function(){
-                document.getElementById('online_title').innerHTML = 'You are online';
+                greenLight.style.opacity = 1;
+                redLight.style.opacity = 0;
+                document.getElementById('online_title').innerHTML = 'YOU ARE ONLINE';
             };
             window.offLineHandler = function(){
-                document.getElementById('online_title').innerHTML = 'You are offline';
+                greenLight.style.opacity = 0;
+                redLight.style.opacity = 1;
+                document.getElementById('online_title').innerHTML = 'YOU ARE OFFLINE';
             };
         </script>
     </body>
