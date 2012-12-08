@@ -6,11 +6,9 @@ Lightweight and easy to use library to check internet connection status.
 Usage
 -----
 
-Include this library into your project and just check is <code>window.online</code> true.
+Include this library into your project and just check is <code>window.onLine</code> true.
 
-Assign <code>window.onlineHandler</code> or <code>window.offlineHandler</code> functions to handle status changes.
-
-Also you can change <code>window.onlineCheckURL</code> to your own one to be independent.
+Assign <code>window.onLineHandler</code> or <code>window.offLineHandler</code> functions to handle status changes.
 
 Just look at <a href="http://pixelscommander.com/polygon/onlinejs/">example</a> (index.html in the repo)!
 
