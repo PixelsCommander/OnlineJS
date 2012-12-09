@@ -32,14 +32,16 @@
     }
 
     w.internetConnection.onInternetAsyncStatus = function (){
-        try {
-            if (w.internetConnection.isXDomain()){
-                xmlhttp.status = 200;
+        if (xmlhttp.readyState === 4 || w.internetConnection.isXDomain()){
+            try {
+                if (w.internetConnection.isXDomain()){
+                    xmlhttp.status = 200;
+                }
+                w.internetConnection.processXmlhttpStatus();
+            } catch(err){
+                w.internetConnection.fireHandlerDependOnStatus(false);
+                w.onLine = false;
             }
-            w.internetConnection.processXmlhttpStatus();
-        } catch(err){
-            w.internetConnection.fireHandlerDependOnStatus(false);
-            w.onLine = false;
         }
     }
     
@@ -47,9 +49,14 @@
         if (xmlhttp!=null){
 
             if (async) {
-                xmlhttp.onload = w.internetConnection.onInternetAsyncStatus;
+                if (w.internetConnection.isXDomain()) {
+                    xmlhttp.onload = w.internetConnection.onInternetAsyncStatus;
+                } else if (w.internetConnection.isXMLHttp()) {
+                    xmlhttp.onreadystatechange = w.internetConnection.onInternetAsyncStatus;
+                }
             } else {
                 xmlhttp.onload = undefined;
+                xmlhttp.onreadystatechange = undefined;
             }
 
             var url = w.onLineCheckURL();
@@ -117,9 +124,11 @@
     });
 
     w.internetConnection.addEvent(w, 'online', function(){
+        console.log('online');
         window.internetConnection.checkConnectionWithRequest(true);
     });
     w.internetConnection.addEvent(w, 'offline', function(){
+        console.log('offline');
         window.internetConnection.checkConnectionWithRequest(true);
     });
 })(window);

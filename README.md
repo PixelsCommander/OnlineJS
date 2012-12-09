@@ -3,14 +3,26 @@ ONLINE JS
 
 Lightweight and reliable library to check internet connection status.
 
+Compatible browsers: IE 8-9, Chrome, Firefox, Android, iOS
+
+
 Usage
 -----
 
-Include this library into your project and just check is <code>window.onLine</code> true.
+Include this library into your project and just check is <code>window.onLine === true</code>.
 
 Assign <code>window.onLineHandler</code> or <code>window.offLineHandler</code> functions to handle status changes.
 
 Just look at <a href="http://pixelscommander.com/polygon/onlinejs/">example</a> (index.html in the repo)!
+
+More info in this <a href="http://pixelscommander.com/en/javascript/onlinejs-javascript-internet-connection/">blog post</a>.
+
+
+navigator.onLine
+----------------
+
+I`m often asked: “Why not use just navigator.onLine ?”. 
+You have to know that this property is underhandled and inconsistent between different browsers. For many of them it shows status of local network connection only and for some versions of FireFox it depends only on autonomic mode settings. So using this property in critical tasks is not good idea. Online JS is a right way for serious project, it uses navigator.onLine only as one of possible triggers and then makes more tests of internet connection. 
 
 
 Questions and propositions
