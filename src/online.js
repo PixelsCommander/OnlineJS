@@ -9,38 +9,60 @@
         }   
     }
 
-    var xmlhttp = new ( window.ActiveXObject || XMLHttpRequest )( "Microsoft.XMLHTTP" );
+    var xmlhttp = new XMLHttpRequest();
+
+    w.internetConnection.isXMLHttp = function(){
+        return "withCredentials" in xmlhttp;
+    }
+
+    w.internetConnection.isXDomain = function(){
+        return typeof XDomainRequest != "undefined";   
+    }
+
+    if (w.internetConnection.isXDomain()) {
+        xmlhttp = new XDomainRequest();
+        xmlhttp.onerror = function(){
+            xmlhttp.status = 404;
+            w.internetConnection.processXmlhttpStatus();
+        }
+        xmlhttp.ontimeout = function(){
+            xmlhttp.status = 404;
+            w.internetConnection.processXmlhttpStatus();
+        }
+    }
 
     w.internetConnection.onInternetAsyncStatus = function (){
-        if (xmlhttp.readyState==4){
-            try {
-                w.internetConnection.processXmlhttpStatus();
-            } catch(err){
-                w.internetConnection.fireHandlerDependOnStatus(false);
-                w.onLine = false;
+        try {
+            if (w.internetConnection.isXDomain()){
+                xmlhttp.status = 200;
             }
+            w.internetConnection.processXmlhttpStatus();
+        } catch(err){
+            w.internetConnection.fireHandlerDependOnStatus(false);
+            w.onLine = false;
         }
     }
     
-     w.internetConnection.checkConnectionWithRequest = function (sync){
+     w.internetConnection.checkConnectionWithRequest = function (async){
         if (xmlhttp!=null){
-            xmlhttp = new ( window.ActiveXObject || XMLHttpRequest )( "Microsoft.XMLHTTP" );
-            if (sync === undefined) {
-                xmlhttp.onreadystatechange = this.onInternetAsyncStatus;
-            } else {
-                xmlhttp.onreadystatechange = undefined;
-            }
 
-            if (sync === undefined) {
-                sync = true;
+            if (async) {
+                xmlhttp.onload = w.internetConnection.onInternetAsyncStatus;
+            } else {
+                xmlhttp.onload = undefined;
             }
 
             var url = w.onLineCheckURL();
 
-            xmlhttp.open("HEAD", url, sync);
+            if (w.internetConnection.isXDomain()){
+                xmlhttp.open("GET", url);
+            } else {
+                xmlhttp.open("HEAD", url, async);    
+            }
+
             xmlhttp.send();
 
-            if (sync === false){
+            if (async === false && !w.internetConnection.isXDomain()){
                 w.internetConnection.processXmlhttpStatus();
                 return w.onLine;
             }
@@ -68,11 +90,11 @@
     }
     
     w.internetConnection.startCheck = function (){
-        setInterval("window.internetConnection.checkConnectionWithRequest()",w.onLineCheckTimeout);    
+        setInterval("window.internetConnection.checkConnectionWithRequest(true)",w.onLineCheckTimeout);    
     }
     
     w.internetConnection.stopCheck = function (){
-        clearInterval("window.internetConnection.checkConnectionWithRequest()",w.onLineCheckTimeout);  
+        clearInterval("window.internetConnection.checkConnectionWithRequest(true)",w.onLineCheckTimeout);  
     }
 
     w.checkOnLine = function(){
@@ -88,14 +110,16 @@
     w.internetConnection.startCheck();
     w.internetConnection.handlerFired = false;
 
+    xmlhttp.onload = w.internetConnection.onInternetAsyncStatus;
+
     w.internetConnection.addEvent(w, 'load', function(){
         w.internetConnection.fireHandlerDependOnStatus(w.onLine);   
     });
 
     w.internetConnection.addEvent(w, 'online', function(){
-        window.internetConnection.checkConnectionWithRequest();
+        window.internetConnection.checkConnectionWithRequest(true);
     });
     w.internetConnection.addEvent(w, 'offline', function(){
-        window.internetConnection.checkConnectionWithRequest();
+        window.internetConnection.checkConnectionWithRequest(true);
     });
 })(window);
