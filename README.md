@@ -21,8 +21,8 @@ More info in this <a href="http://pixelscommander.com/en/javascript/onlinejs-jav
 navigator.onLine
 ----------------
 
-I`m often asked: “Why not use just navigator.onLine ?”. 
-You have to know that this property is underhandled and inconsistent between different browsers. For many of them it shows status of local network connection only and for some versions of FireFox it depends only on autonomous mode settings. So using this property in critical tasks is not good idea. Online JS is a right way for serious project, it uses navigator.onLine only as one of possible triggers and then makes more tests of internet connection. 
+I`m often asked: “Why not just use navigator.onLine ?”. 
+Using this property in critical tasks is bad idea. Property is underhandled and is not consistent among all browsers. It can show local connection status or react only on autonomous mode switching. Online JS is better way for serious project, it uses navigator.onLine and corresponding events as one of possible triggers and then makes more checks of internet connection.
 
 
 Questions and propositions
