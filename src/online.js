@@ -125,7 +125,7 @@
     }
     
     w.onLineCheckURL = function(){
-        return "http://www.pixelsresearch.com/online.php?r=" + Math.random();
+        return "http://offlinejs.com/online.php?r=" + Math.random();
     }
 
     w.onLineCheckTimeout = 5000;
