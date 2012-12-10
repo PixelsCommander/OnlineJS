@@ -19,62 +19,78 @@
         return typeof XDomainRequest != "undefined";   
     }
 
-    if (w.internetConnection.isXDomain()) {
-        xmlhttp = new XDomainRequest();
-        xmlhttp.onerror = function(){
-            xmlhttp.status = 404;
-            w.internetConnection.processXmlhttpStatus();
-        }
-        xmlhttp.ontimeout = function(){
-            xmlhttp.status = 404;
-            w.internetConnection.processXmlhttpStatus();
-        }
-    }
-
-    w.internetConnection.onInternetAsyncStatus = function (){
-        if (xmlhttp.readyState === 4 || w.internetConnection.isXDomain()){
+    //For IE we use XDomainRequest and sometimes it uses a bit different logic, so adding decorator for this
+    w.internetConnection.XDomainLogic = {
+        init: function(){
+            xmlhttp = new XDomainRequest();
+            xmlhttp.onerror = function(){
+                xmlhttp.status = 404;
+                w.internetConnection.processXmlhttpStatus();
+            }
+            xmlhttp.ontimeout = function(){
+                xmlhttp.status = 404;
+                w.internetConnection.processXmlhttpStatus();
+            }
+        },
+        onInternetAsyncStatus: function(){
             try {
-                if (w.internetConnection.isXDomain()){
-                    xmlhttp.status = 200;
-                }
+                xmlhttp.status = 200;
                 w.internetConnection.processXmlhttpStatus();
             } catch(err){
                 w.internetConnection.fireHandlerDependOnStatus(false);
                 w.onLine = false;
             }
+        },
+        checkConnectionWithRequest: function(async){
+            xmlhttp.onload = w.internetConnection.logic.onInternetAsyncStatus;
+
+            var url = w.onLineCheckURL();
+
+            xmlhttp.open("GET", url);
+            xmlhttp.send();
         }
     }
-    
-     w.internetConnection.checkConnectionWithRequest = function (async){
-        if (xmlhttp!=null){
 
-            if (async) {
-                if (w.internetConnection.isXDomain()) {
-                    xmlhttp.onload = w.internetConnection.onInternetAsyncStatus;
-                } else if (w.internetConnection.isXMLHttp()) {
-                    xmlhttp.onreadystatechange = w.internetConnection.onInternetAsyncStatus;
+    //Another case for decoration is XMLHttpRequest
+    w.internetConnection.XMLHttpLogic = {
+        init: function(){
+
+        },
+        onInternetAsyncStatus: function(){
+            if (xmlhttp.readyState === 4){
+                try {
+                    w.internetConnection.processXmlhttpStatus();
+                } catch(err){
+                    w.internetConnection.fireHandlerDependOnStatus(false);
+                    w.onLine = false;
                 }
+            }
+        },
+        checkConnectionWithRequest: function(async){
+            if (async) {
+                xmlhttp.onreadystatechange = w.internetConnection.logic.onInternetAsyncStatus;
             } else {
-                xmlhttp.onload = undefined;
                 xmlhttp.onreadystatechange = undefined;
             }
 
             var url = w.onLineCheckURL();
-
-            if (w.internetConnection.isXDomain()){
-                xmlhttp.open("GET", url);
-            } else {
-                xmlhttp.open("HEAD", url, async);    
-            }
-
+            xmlhttp.open("HEAD", url, async);    
             xmlhttp.send();
 
-            if (async === false && !w.internetConnection.isXDomain()){
+            if (async === false) {
                 w.internetConnection.processXmlhttpStatus();
                 return w.onLine;
-            }
+            }    
         }
     }
+
+    if (w.internetConnection.isXDomain()) {
+        w.internetConnection.logic = w.internetConnection.XDomainLogic;
+    } else {
+        w.internetConnection.logic = w.internetConnection.XMLHttpLogic;
+    }
+
+    w.internetConnection.logic.init();
 
     w.internetConnection.processXmlhttpStatus = function(){
         var tempOnLine = w.internetConnection.verifyStatus(xmlhttp.status);
@@ -97,15 +113,15 @@
     }
     
     w.internetConnection.startCheck = function (){
-        setInterval("window.internetConnection.checkConnectionWithRequest(true)",w.onLineCheckTimeout);    
+        setInterval("window.internetConnection.logic.checkConnectionWithRequest(true)",w.onLineCheckTimeout);    
     }
     
     w.internetConnection.stopCheck = function (){
-        clearInterval("window.internetConnection.checkConnectionWithRequest(true)",w.onLineCheckTimeout);  
+        clearInterval("window.internetConnection.logic.checkConnectionWithRequest(true)",w.onLineCheckTimeout);  
     }
 
     w.checkOnLine = function(){
-        w.internetConnection.checkConnectionWithRequest(false);
+        w.internetConnection.logic.checkConnectionWithRequest(false);
     }
     
     w.onLineCheckURL = function(){
@@ -117,18 +133,14 @@
     w.internetConnection.startCheck();
     w.internetConnection.handlerFired = false;
 
-    xmlhttp.onload = w.internetConnection.onInternetAsyncStatus;
-
     w.internetConnection.addEvent(w, 'load', function(){
         w.internetConnection.fireHandlerDependOnStatus(w.onLine);   
     });
 
     w.internetConnection.addEvent(w, 'online', function(){
-        console.log('online');
-        window.internetConnection.checkConnectionWithRequest(true);
+        window.internetConnection.logic.checkConnectionWithRequest(true);
     });
     w.internetConnection.addEvent(w, 'offline', function(){
-        console.log('offline');
-        window.internetConnection.checkConnectionWithRequest(true);
+        window.internetConnection.logic.checkConnectionWithRequest(true);
     });
 })(window);
