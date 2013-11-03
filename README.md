@@ -15,6 +15,8 @@ Assign <code>window.onLineHandler</code> or <code>window.offLineHandler</code> f
 
 Just look at <a href="http://pixelscommander.com/polygon/onlinejs/">example</a> (index.html in the repo)!
 
+You can change <code>window.onLineURL</code> to point OnlineJS to your own server.
+
 More info in this <a href="http://pixelscommander.com/en/javascript/onlinejs-javascript-internet-connection/">blog post</a>.
 
 
