@@ -1,146 +1,198 @@
-(function (w){
-    w.internetConnection = w.internetConnection || {};
+function getterSetter(variableParent, variableName, getterFunction, setterFunction) {
+    if (Object.defineProperty) {
+        Object.defineProperty(variableParent, variableName, {
+            get: getterFunction,
+            set: setterFunction
+        });
+    }
+    else if (document.__defineGetter__) {
+        variableParent.__defineGetter__(variableName, getterFunction);
+        variableParent.__defineSetter__(variableName, setterFunction);
+    }
+}
 
-    w.internetConnection.addEvent = function(obj, type, callback){
-        if (window.attachEvent){
-            obj.attachEvent('on' + type, callback);
-        } else {
-            obj.addEventListener(type, callback);
-        }   
+(function (w) {
+    w.onlinejs = w.onlinejs || {};
+
+    //Checks interval can be changed in runtime
+    w.onLineCheckTimeout = 5000;
+
+    //Use window.onLineURL incapsulated variable
+    w.onlinejs._onLineURL = "http://offlinejs.com/online.php";
+
+    w.onlinejs.setOnLineURL = function (newURL) {
+        w.onlinejs._onLineURL = newURL;
+        w.onlinejs.getStatusFromNavigatorOnLine();
     }
 
+    w.onlinejs.getOnLineURL = function () {
+        return w.onlinejs._onLineURL;
+    }
+
+    getterSetter(w, 'onLineURL', w.onlinejs.getOnLineURL, w.onlinejs.setOnLineURL);
+
+
+    //Verification logic
+    w.onlinejs.setStatus = function (newStatus) {
+        w.onlinejs.fireHandlerDependOnStatus(newStatus);
+        w.onLine = newStatus;
+    }
+
+    w.onlinejs.fireHandlerDependOnStatus = function (newStatus) {
+        if (newStatus === true && w.onLineHandler !== undefined && (w.onLine !== true || w.onlinejs.handlerFired === false)) {
+            w.onLineHandler();
+        }
+        if (newStatus === false && w.offLineHandler !== undefined && (w.onLine !== false || w.onlinejs.handlerFired === false)) {
+            w.offLineHandler();
+        }
+        w.onlinejs.handlerFired = true;
+    };
+
+    w.onlinejs.startCheck = function () {
+        setInterval("window.onlinejs.logic.checkConnectionWithRequest(true)", w.onLineCheckTimeout);
+    }
+
+    w.onlinejs.stopCheck = function () {
+        clearInterval("window.onlinejs.logic.checkConnectionWithRequest(true)", w.onLineCheckTimeout);
+    }
+
+    w.checkOnLine = function () {
+        w.onlinejs.logic.checkConnectionWithRequest(false);
+    }
+
+    w.onlinejs.getOnLineCheckURL = function () {
+        return w.onlinejs._onLineURL + '?r=' + Math.random();
+    }
+
+    w.onlinejs.getStatusFromNavigatorOnLine = function () {
+        if (w.navigator.onLine !== undefined) {
+            w.onlinejs.setStatus(w.navigator.onLine);
+        } else {
+            w.onlinejs.setStatus(true);
+        }
+    }
+
+    //Network transport layer
     var xmlhttp = new XMLHttpRequest();
 
-    w.internetConnection.isXMLHttp = function(){
+    w.onlinejs.isXMLHttp = function () {
         return "withCredentials" in xmlhttp;
     }
 
-    w.internetConnection.isXDomain = function(){
-        return typeof XDomainRequest != "undefined";   
+    w.onlinejs.isXDomain = function () {
+        return typeof XDomainRequest != "undefined";
     }
 
     //For IE we use XDomainRequest and sometimes it uses a bit different logic, so adding decorator for this
-    w.internetConnection.XDomainLogic = {
-        init: function(){
+    w.onlinejs.XDomainLogic = {
+        init: function () {
             xmlhttp = new XDomainRequest();
-            xmlhttp.onerror = function(){
+            xmlhttp.onerror = function () {
                 xmlhttp.status = 404;
-                w.internetConnection.processXmlhttpStatus();
+                w.onlinejs.processXmlhttpStatus();
             }
-            xmlhttp.ontimeout = function(){
+            xmlhttp.ontimeout = function () {
                 xmlhttp.status = 404;
-                w.internetConnection.processXmlhttpStatus();
+                w.onlinejs.processXmlhttpStatus();
             }
         },
-        onInternetAsyncStatus: function(){
+        onInternetAsyncStatus: function () {
             try {
                 xmlhttp.status = 200;
-                w.internetConnection.processXmlhttpStatus();
-            } catch(err){
-                w.internetConnection.fireHandlerDependOnStatus(false);
-                w.onLine = false;
+                w.onlinejs.processXmlhttpStatus();
+            } catch (err) {
+                w.onlinejs.setStatus(false);
             }
         },
-        checkConnectionWithRequest: function(async){
-            xmlhttp.onload = w.internetConnection.logic.onInternetAsyncStatus;
+        checkConnectionWithRequest: function (async) {
+            xmlhttp.onload = w.onlinejs.logic.onInternetAsyncStatus;
 
-            var url = w.onLineCheckURL();
+            var url = w.onlinejs.getOnLineCheckURL();
 
             xmlhttp.open("GET", url);
-            xmlhttp.send();
+            w.onlinejs.tryToSend(xmlhttp);
         }
     }
 
     //Another case for decoration is XMLHttpRequest
-    w.internetConnection.XMLHttpLogic = {
-        init: function(){
+    w.onlinejs.XMLHttpLogic = {
+        init: function () {
 
         },
-        onInternetAsyncStatus: function(){
-            if (xmlhttp.readyState === 4){
+        onInternetAsyncStatus: function () {
+            if (xmlhttp.readyState === 4) {
                 try {
-                    w.internetConnection.processXmlhttpStatus();
-                } catch(err){
-                    w.internetConnection.fireHandlerDependOnStatus(false);
-                    w.onLine = false;
+                    w.onlinejs.processXmlhttpStatus();
+                } catch (err) {
+                    w.onlinejs.setStatus(false);
                 }
             }
         },
-        checkConnectionWithRequest: function(async){
+        checkConnectionWithRequest: function (async) {
             if (async) {
-                xmlhttp.onreadystatechange = w.internetConnection.logic.onInternetAsyncStatus;
+                xmlhttp.onreadystatechange = w.onlinejs.logic.onInternetAsyncStatus;
             } else {
                 xmlhttp.onreadystatechange = undefined;
             }
 
-            var url = w.onLineCheckURL();
-            xmlhttp.open("HEAD", url, async);    
-            xmlhttp.send();
+            var url = w.onlinejs.getOnLineCheckURL();
+            xmlhttp.open("HEAD", url, async);
+            w.onlinejs.tryToSend(xmlhttp);
 
             if (async === false) {
-                w.internetConnection.processXmlhttpStatus();
+                w.onlinejs.processXmlhttpStatus();
                 return w.onLine;
-            }    
+            }
         }
     }
 
-    if (w.internetConnection.isXDomain()) {
-        w.internetConnection.logic = w.internetConnection.XDomainLogic;
+    if (w.onlinejs.isXDomain()) {
+        w.onlinejs.logic = w.onlinejs.XDomainLogic;
     } else {
-        w.internetConnection.logic = w.internetConnection.XMLHttpLogic;
+        w.onlinejs.logic = w.onlinejs.XMLHttpLogic;
     }
 
-    w.internetConnection.logic.init();
-
-    w.internetConnection.processXmlhttpStatus = function(){
-        var tempOnLine = w.internetConnection.verifyStatus(xmlhttp.status);
-        w.internetConnection.fireHandlerDependOnStatus(tempOnLine);
-        w.onLine = tempOnLine;  
+    w.onlinejs.processXmlhttpStatus = function () {
+        var tempOnLine = w.onlinejs.verifyStatus(xmlhttp.status);
+        w.onlinejs.setStatus(tempOnLine);
     }
 
-    w.internetConnection.verifyStatus = function(status){
-        return ( status >= 200 && status < 300 || status === 304 )  
+    w.onlinejs.verifyStatus = function (status) {
+        return ( status >= 200 && status < 300 || status === 304 )
     }
 
-    w.internetConnection.fireHandlerDependOnStatus = function (newStatus){
-        if (newStatus === true && w.onLineHandler !== undefined && (w.onLine !== true || w.internetConnection.handlerFired === false)){
-            w.onLineHandler();  
+    w.onlinejs.tryToSend = function (xmlhttprequest) {
+        try {
+            xmlhttprequest.send();
+        } catch(e) {
+            w.onlinejs.setStatus(false);
         }
-        if (newStatus === false && w.offLineHandler !== undefined && (w.onLine !== false || w.internetConnection.handlerFired === false)){
-            w.offLineHandler(); 
+    }
+
+    //Events handling
+    w.onlinejs.addEvent = function (obj, type, callback) {
+        if (window.attachEvent) {
+            obj.attachEvent('on' + type, callback);
+        } else {
+            obj.addEventListener(type, callback);
         }
-        w.internetConnection.handlerFired = true;
-    }
-    
-    w.internetConnection.startCheck = function (){
-        setInterval("window.internetConnection.logic.checkConnectionWithRequest(true)",w.onLineCheckTimeout);    
-    }
-    
-    w.internetConnection.stopCheck = function (){
-        clearInterval("window.internetConnection.logic.checkConnectionWithRequest(true)",w.onLineCheckTimeout);  
     }
 
-    w.checkOnLine = function(){
-        w.internetConnection.logic.checkConnectionWithRequest(false);
-    }
-    
-    w.onLineCheckURL = function(){
-        return "http://offlinejs.com/online.php?r=" + Math.random();
-    }
+    w.onlinejs.addEvent(w, 'load', function () {
+        w.onlinejs.fireHandlerDependOnStatus(w.onLine);
+    });
 
-    w.onLineCheckTimeout = 5000;
+    w.onlinejs.addEvent(w, 'online', function () {
+        window.onlinejs.logic.checkConnectionWithRequest(true);
+    })
+
+    w.onlinejs.addEvent(w, 'offline', function () {
+        window.onlinejs.logic.checkConnectionWithRequest(true);
+    })
+
+    w.onlinejs.getStatusFromNavigatorOnLine();
+    w.onlinejs.logic.init();
     w.checkOnLine();
-    w.internetConnection.startCheck();
-    w.internetConnection.handlerFired = false;
-
-    w.internetConnection.addEvent(w, 'load', function(){
-        w.internetConnection.fireHandlerDependOnStatus(w.onLine);   
-    });
-
-    w.internetConnection.addEvent(w, 'online', function(){
-        window.internetConnection.logic.checkConnectionWithRequest(true);
-    });
-    w.internetConnection.addEvent(w, 'offline', function(){
-        window.internetConnection.logic.checkConnectionWithRequest(true);
-    });
+    w.onlinejs.startCheck();
+    w.onlinejs.handlerFired = false;
 })(window);
