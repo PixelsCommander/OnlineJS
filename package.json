@@ -1,0 +1,31 @@
+{
+  "name": "OnlineJS",
+  "version": "0.3.1",
+  "description": "Reliable way to determine status of internet connection.",
+  "main": "Gruntfile.js",
+  "site": "http://pixelscommander.com/polygon/onlinejs/",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PixelsCommander/OnlineJS.git"
+  },
+  "keywords": [
+    "online",
+    "offline",
+    "detection",
+    "internet",
+    "connection",
+    "javascript",
+    "library"
+  ],
+  "author": "Denis Radin aka PixelsCommander",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "0b564d848fa362b350ea2f713ed1fc194a5084b7",
+  "devDependencies": {
+    "grunt-contrib-uglify": "~0.2.5",
+    "grunt": "~0.4.1"
+  }
+}
