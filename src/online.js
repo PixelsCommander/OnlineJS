@@ -61,7 +61,7 @@ function getterSetter(variableParent, variableName, getterFunction, setterFuncti
     }
 
     w.onlinejs.getOnLineCheckURL = function () {
-        return w.onlinejs._onLineURL + '?r=' + Math.random();
+        return w.onlinejs._onLineURL + '?' + Date.now();
     }
 
     w.onlinejs.getStatusFromNavigatorOnLine = function () {
@@ -158,7 +158,7 @@ function getterSetter(variableParent, variableName, getterFunction, setterFuncti
     }
 
     w.onlinejs.verifyStatus = function (status) {
-        return ( status >= 200 && status < 300 || status === 304 )
+        return status === 200;
     }
 
     w.onlinejs.tryToSend = function (xmlhttprequest) {
