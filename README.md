@@ -3,7 +3,7 @@ ONLINE JS
 
 Lightweight and reliable library to check internet connection status.
 
-Compatible browsers: IE 8-11, Chrome, Firefox, Android, iOS
+Compatible browsers: IE 8-11, Opera, Chrome, Firefox, Android, iOS
 
 
 Usage
