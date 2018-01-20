@@ -15,9 +15,11 @@ Assign <code>window.onLineHandler</code> or <code>window.offLineHandler</code> f
 
 Just look at <a href="http://pixelscommander.com/polygon/onlinejs/">example</a> (index.html in the repo)!
 
-You can change <code>window.onLineURL</code> to point OnlineJS to your own server.
-
 More info in this <a href="http://pixelscommander.com/en/javascript/onlinejs-javascript-internet-connection/">blog post</a>.
+
+Safety and guarantees
+---------------------
+Library requests headers from public URL to check if internet is available. URL set by default is maintained by me and there is no guarantee I am going to run it forever. In order to make it safe for your application it is recommended to run your own URL responding with header <code>Access-Control-Allow-Origin: *</code> and then switch Online.JS to it by setting <code>window.onLineURL</code>.
 
 
 navigator.onLine
